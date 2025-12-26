@@ -1,0 +1,60 @@
+name: Stalin-143 Auto Commit
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (SAFE)
+  workflow_dispatch:
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "Stalin-143"
+          git config user.email "Stalin-143@users.noreply.github.com"
+
+      - name: Ensure main branch
+        run: git checkout main
+
+      - name: Update files and commit
+        run: |
+          set -e
+
+          FILES=(
+            ".github/a_1.md"
+            "README.md"
+            ".github/a_2.md"
+            ".github/a_3.md"
+            ".github/a_4.md"
+          )
+
+          for FILE in "${FILES[@]}"; do
+            DIR=$(dirname "$FILE")
+            if [ "$DIR" != "." ]; then
+              mkdir -p "$DIR"
+            fi
+
+            if [ ! -f "$FILE" ]; then
+              echo "# Auto Commit File" > "$FILE"
+              echo "commit number: 1" >> "$FILE"
+            else
+              COUNT=$(grep -oP 'commit number: \K\d+' "$FILE" || echo "0")
+              COUNT=$((COUNT + 1))
+              sed -i "s/commit number:.*/commit number: $COUNT/" "$FILE"
+            fi
+
+            git add "$FILE"
+          done
+
+          git commit -m "auto activity update" || echo "No changes to commit"
+
+      - name: Push changes
+        run: git push origin main
