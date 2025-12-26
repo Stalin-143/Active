@@ -1,9 +1,8 @@
-name: Stalin-143 Auto Commit
+name: Xiv3r Auto Commit
 
 on:
   schedule:
-    - cron: "*/1 * * * *"   # every 5 minutes (SAFE)
-  workflow_dispatch:
+    - cron: "* * * * *"
 
 jobs:
   commit:
@@ -13,48 +12,71 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
-          git config user.name "Stalin-143"
-          git config user.email "Stalin-143@users.noreply.github.com"
+          git config --global user.name "Stalin-143"
+          git config --global user.email "Stalin-143@users.noreply.github.com"
 
-      - name: Ensure main branch
+      - name: Switch to main branch
         run: git checkout main
 
-      - name: Update files and commit
+      - name: Loop Commit Updates
         run: |
           set -e
-
-          FILES=(
-            ".github/a_1.md"
-            "README.md"
-            ".github/a_2.md"
-            ".github/a_3.md"
-            ".github/a_4.md"
-          )
+          
+          FILES=(".github/Xiver_1.md" "README.md" ".github/Xiver_2.md" ".github/Xiver_3.md" ".github/Xiver_4.md")  # List of files to update
+          COMMIT_LOOP_COUNT=950  # Reduced for testing, change back to 950 later
 
           for FILE in "${FILES[@]}"; do
+            echo "Checking for file: $FILE"
+
+            # Create directory if it doesn't exist
             DIR=$(dirname "$FILE")
             if [ "$DIR" != "." ]; then
               mkdir -p "$DIR"
             fi
 
-            if [ ! -f "$FILE" ]; then
-              echo "# Auto Commit File" > "$FILE"
-              echo "commit number: 1" >> "$FILE"
-            else
-              COUNT=$(grep -oP 'commit number: \K\d+' "$FILE" || echo "0")
-              COUNT=$((COUNT + 1))
-              sed -i "s/commit number:.*/commit number: $COUNT/" "$FILE"
-            fi
+            for ((i=1; i<=COMMIT_LOOP_COUNT; i++)); do
+              echo "Iteration $i of $COMMIT_LOOP_COUNT"
+              if [ ! -f "$FILE" ]; then
+                echo "File not found, creating $FILE..."
+                echo "# Git Commit" > "$FILE"
+                echo "This file was added - $(date +"%b %d, %Y")" >> "$FILE"
+                echo "" >> "$FILE"
+                echo "Daily git commit" >> "$FILE"
+                echo "" >> "$FILE"
+                echo "commit number: 1" >> "$FILE"
+                NEXT_COUNT=1
+              else
+                echo "File exists. Updating commit number..."
+                CURRENT_COUNT=$(grep -oP 'commit number: \K\d+' "$FILE" || echo "0")
+                echo "Current commit number: $CURRENT_COUNT"
+                NEXT_COUNT=$((CURRENT_COUNT + 1))
+                sed -i "s/commit number: .*/commit number: $NEXT_COUNT/" "$FILE"
+                echo "Updated commit number to: $NEXT_COUNT"
+              fi
 
-            git add "$FILE"
+              echo "Contents of the file:"
+              cat "$FILE"
+
+              echo "Staging changes..."
+              git add "$FILE"
+              
+              echo "Committing changes..."
+              git commit -m "Auto commit #$NEXT_COUNT : target - ($FILE)" --allow-empty
+
+            done
+
+            echo "Pulling latest changes to ensure we start with the latest commit..."
+            git pull --rebase origin main
+            
+            echo "Pushing changes..."
+            git push origin main
+            
+            sleep 1
           done
 
-          git commit -m "auto activity update" || echo "No changes to commit"
-
-      - name: Push changes
-        run: git push origin main
+          echo "All commits completed successfully!"
