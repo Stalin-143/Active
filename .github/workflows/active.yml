@@ -2,7 +2,7 @@ name: Stalin-143 Auto Commit
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes (SAFE)
+    - cron: "*/1 * * * *"   # every 5 minutes (SAFE)
   workflow_dispatch:
 
 jobs:
