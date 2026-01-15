@@ -1,0 +1,83 @@
+name: Daily Activity Commits
+
+on:
+  schedule:
+    # Run 20 times per day at different hours (distributed throughout the day)
+    - cron: '0 0 * * *'    # 00:00
+    - cron: '12 1 * * *'   # 01:12
+    - cron: '24 2 * * *'   # 02:24
+    - cron: '36 3 * * *'   # 03:36
+    - cron: '48 4 * * *'   # 04:48
+    - cron: '0 6 * * *'    # 06:00
+    - cron: '12 7 * * *'   # 07:12
+    - cron: '24 8 * * *'   # 08:24
+    - cron: '36 9 * * *'   # 09:36
+    - cron: '48 10 * * *'  # 10:48
+    - cron: '0 12 * * *'   # 12:00
+    - cron: '12 13 * * *'  # 13:12
+    - cron: '24 14 * * *'  # 14:24
+    - cron: '36 15 * * *'  # 15:36
+    - cron: '48 16 * * *'  # 16:48
+    - cron: '0 18 * * *'   # 18:00
+    - cron: '12 19 * * *'  # 19:12
+    - cron: '24 20 * * *'  # 20:24
+    - cron: '36 21 * * *'  # 21:36
+    - cron: '48 22 * * *'  # 22:48
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Need write permission to push commits
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "w4nn4d13"
+          git config --global user.email "w4nn4d13@users.noreply.github.com"
+
+      - name: Update activity file
+        run: |
+          # Ensure activity.txt exists with default value
+          if [ ! -f activity.txt ]; then
+            echo "0" > activity.txt
+          fi
+
+          # Read current value
+          current=$(cat activity.txt)
+
+          # Validate that current is a number
+          if ! [[ "$current" =~ ^[0-9]+$ ]]; then
+            echo "Invalid content in activity.txt, resetting to 0"
+            current=0
+          fi
+
+          # Increment by 1 or 2 (alternating based on current value)
+          if [ $((current % 2)) -eq 0 ]; then
+            increment=1
+          else
+            increment=2
+          fi
+          new_value=$((current + increment))
+
+          # Update the file
+          echo $new_value > activity.txt
+
+          echo "Updated from $current to $new_value (increment: $increment)"
+
+      - name: Commit changes
+        run: |
+          git add activity.txt
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Activity update: $(date '+%Y-%m-%d %H:%M:%S')"
+            git push
+          fi
