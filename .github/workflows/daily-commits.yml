@@ -28,6 +28,8 @@ on:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Need write permission to push commits
 
     steps:
       - name: Checkout repository
