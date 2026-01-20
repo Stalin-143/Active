@@ -68,7 +68,7 @@ jobs:
           new_value=$((current + increment))
 
           # Update the file
-          echo $new_value > activity.txt
+          echo "$new_value" > activity.txt
 
           echo "Updated from $current to $new_value (increment: $increment)"
 
