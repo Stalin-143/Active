@@ -40,8 +40,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "w4nn4d13"
-          git config --global user.email "w4nn4d13@users.noreply.github.com"
+          git config --global user.name "Stalin-143"
+          git config --global user.email "Stalin-143@users.noreply.github.com"
 
       - name: Update activity file
         run: |
